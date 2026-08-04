@@ -1,0 +1,183 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ERP.Domain</name>
+    </assembly>
+    <members>
+        <member name="T:ERP.Domain.Accounting.AccountNature">
+            <summary>Nature of an account balance — determines whether a debit or a credit
+            increases it. This single distinction is what makes the double-entry engine
+            self-consistent: every posting rule reduces to "does this debit/credit increase
+            or decrease the account's Nature".</summary>
+        </member>
+        <member name="T:ERP.Domain.Accounting.AccountGroup">
+            <summary>
+            Chart-of-Accounts grouping node (e.g. "Current Assets", "Operating Expenses").
+            Forms a self-referencing tree so the Trial Balance / Balance Sheet can be
+            rendered hierarchically per company policy.
+            </summary>
+        </member>
+        <member name="T:ERP.Domain.Accounting.Account">
+            <summary>
+            Aggregate Root of the Chart of Accounts. Every financial posting in the entire
+            ERP ultimately resolves to a debit/credit against an <see cref="T:ERP.Domain.Accounting.Account"/>.
+            The account enforces its own invariants: it cannot be posted to if it is a
+            summary/header account (only leaf accounts accept postings), and it cannot be
+            deactivated while it carries a non-zero balance concept is enforced at the
+            application-service level via the ledger, not here (this aggregate only knows
+            its own definition, not its running balance — that is a GL projection).
+            </summary>
+        </member>
+        <member name="P:ERP.Domain.Accounting.Account.IsHeaderAccount">
+            <summary>Header accounts are structural only (e.g. "1000 - Assets") and
+            cannot receive journal postings directly — only their leaf descendants can.
+            This mirrors how SAP B1 / Dynamics BC prevent posting to summary nodes.</summary>
+        </member>
+        <member name="M:ERP.Domain.Accounting.Account.SignedEffect(System.Decimal,System.Decimal)">
+            <summary>
+            Signed effect of a raw debit/credit pair on this account's natural balance.
+            Positive result increases the account, negative decreases it. Centralizing
+            this here means the GL balance calculator, Trial Balance, and Balance Sheet
+            reports all derive from one authoritative rule instead of duplicating
+            "if debit account then debit-credit else credit-debit" logic everywhere.
+            </summary>
+        </member>
+        <member name="T:ERP.Domain.Accounting.CostCenter">
+            <summary>Cost Center — enables dimensional accounting (profit/cost tracking per
+            department, project, or branch) orthogonal to the Chart of Accounts, as required
+            for management reporting in any real ERP.</summary>
+        </member>
+        <member name="T:ERP.Domain.Accounting.FiscalYear">
+            <summary>
+            Aggregate Root representing one fiscal year, composed of accounting periods
+            (typically monthly). No journal entry may post to a period that is not Open —
+            this is the primary control that prevents accidental/fraudulent tampering with
+            closed books, mirroring period-lock behavior in SAP/Dynamics.
+            </summary>
+        </member>
+        <member name="M:ERP.Domain.Accounting.FiscalYear.ClosePeriod(System.Int32,System.String)">
+            <summary>Closes a period after validating all prior periods are already
+            closed — periods must close sequentially, matching real-world close
+            procedures (cannot close March while January is still open).</summary>
+        </member>
+        <member name="T:ERP.Domain.Accounting.AccountingPeriod">
+            <summary>Child entity of FiscalYear — the actual posting-control unit. Every
+            JournalEntry line is validated against its period's Status before posting.</summary>
+        </member>
+        <member name="T:ERP.Domain.Accounting.JournalSourceModule">
+            <summary>Identifies which module/document produced this entry, enabling drill-down
+            from the General Ledger back to the originating Sales Invoice, PO, Payroll run, etc.
+            This traceability is what separates a real accounting engine from a spreadsheet.</summary>
+        </member>
+        <member name="T:ERP.Domain.Accounting.JournalEntry">
+             <summary>
+             AGGREGATE ROOT of the entire Financial Accounting module and, transitively, of
+             the whole ERP's financial integrity. Every economic event in every other module
+             (Sales, Purchasing, Inventory, Payroll, Fixed Assets) ultimately materializes as
+             one JournalEntry here.
+            
+             CORE INVARIANT (enforced, never bypassable): total debits MUST equal total
+             credits at all times a JournalEntry transitions to Posted. This is not a
+             validation rule bolted on in the Application layer — it is a domain invariant
+             enforced inside the aggregate itself, because allowing an unbalanced entry to
+             ever reach the database would corrupt the ledger irrecoverably.
+             </summary>
+        </member>
+        <member name="M:ERP.Domain.Accounting.JournalEntry.CreateDraft(System.String,System.DateTime,System.Guid,System.Guid,System.Guid,System.Guid,System.String,ERP.Domain.Accounting.JournalSourceModule,System.String,System.Nullable{System.Guid})">
+            <summary>
+            Factory method — the ONLY way to construct a JournalEntry. Starts in Draft
+            with no lines; lines are added via <see cref="M:ERP.Domain.Accounting.JournalEntry.AddLine(System.Guid,System.Decimal,System.Decimal,System.String,System.Nullable{System.Guid},System.String)"/>, and the entry can
+            only transition to Posted through <see cref="M:ERP.Domain.Accounting.JournalEntry.Post(ERP.Domain.Accounting.AccountingPeriod)"/>, which re-validates
+            balance. This funnel prevents any code path from producing a malformed entry.
+            </summary>
+        </member>
+        <member name="M:ERP.Domain.Accounting.JournalEntry.AddLine(System.Guid,System.Decimal,System.Decimal,System.String,System.Nullable{System.Guid},System.String)">
+            <summary>Adds one debit-or-credit line. A line must be exactly one-sided —
+            a real accounting system never allows a single line to carry both a debit
+            and a credit amount simultaneously.</summary>
+        </member>
+        <member name="M:ERP.Domain.Accounting.JournalEntry.Post(ERP.Domain.Accounting.AccountingPeriod)">
+            <summary>
+            Posts the entry: validates the double-entry invariant, the period is open,
+            and every referenced account is a valid leaf/postable account (that last
+            check happens in the domain service <see cref="T:ERP.Domain.Accounting.Services.JournalPostingService"/>
+            which has access to the Account repository — this aggregate alone cannot see
+            other aggregates, per DDD aggregate-boundary rules). On success, raises
+            <see cref="T:ERP.Domain.Accounting.JournalEntryPostedEvent"/> so the GL projection / read model can
+            update asynchronously.
+            </summary>
+        </member>
+        <member name="M:ERP.Domain.Accounting.JournalEntry.CreateReversal(System.String,System.DateTime,System.Guid,System.String)">
+            <summary>
+            Creates a fully mirrored reversing entry (debits become credits and vice
+            versa) for the given date. Used for period-end accruals, error correction,
+            or cancelling a posted source document (e.g. a cancelled Sales Invoice) —
+            never delete a posted entry; always reverse it, preserving the audit trail.
+            </summary>
+        </member>
+        <member name="T:ERP.Domain.Accounting.JournalLine">
+            <summary>
+            Child entity of JournalEntry (not an aggregate root — never accessed outside
+            its parent JournalEntry). Represents a single debit or credit line.
+            </summary>
+        </member>
+        <member name="T:ERP.Domain.Accounting.JournalEntryPostedEvent">
+            <summary>Raised when a JournalEntry successfully posts. Consumed by: (1) the GL
+            balance read-model projector, (2) SignalR hub to push a live dashboard KPI
+            update, (3) Hangfire job that recalculates dependent reports (Trial Balance
+            cache invalidation).</summary>
+        </member>
+        <member name="M:ERP.Domain.Accounting.JournalEntryPostedEvent.#ctor(System.Guid,System.String,System.DateTime,System.Guid,System.Decimal)">
+            <summary>Raised when a JournalEntry successfully posts. Consumed by: (1) the GL
+            balance read-model projector, (2) SignalR hub to push a live dashboard KPI
+            update, (3) Hangfire job that recalculates dependent reports (Trial Balance
+            cache invalidation).</summary>
+        </member>
+        <member name="T:ERP.Domain.Accounting.Services.IAccountRepository">
+            <summary>
+            Repository contract for the Account aggregate (implemented in Persistence).
+            </summary>
+        </member>
+        <member name="T:ERP.Domain.Accounting.Services.JournalPostingService">
+             <summary>
+             Domain Service (per DDD: operations that don't naturally belong to a single
+             aggregate because they coordinate several — here, JournalEntry + Account +
+             FiscalYear). This is the single choke point every other module's posting logic
+             (Sales, Purchasing, Payroll, Inventory, Fixed Assets) calls through, which is
+             what guarantees the whole ERP's ledger stays internally consistent: no module
+             is allowed to write a JournalEntry any other way.
+            
+             Uses the STRATEGY pattern via <see cref="!:IPostingRule"/> — each source module
+             supplies its own rule object describing which accounts to debit/credit for its
+             document type (e.g. SalesInvoicePostingRule, PurchaseInvoicePostingRule,
+             PayrollPostingRule), while this service owns the invariant enforcement
+             (balance, period-open, account-postable) that is common to all of them.
+             </summary>
+        </member>
+        <member name="M:ERP.Domain.Accounting.Services.JournalPostingService.PostAsync(System.Guid,System.Guid,System.DateTime,System.String,ERP.Domain.Accounting.JournalSourceModule,System.String,System.Nullable{System.Guid},System.ValueTuple{System.Guid,System.Decimal,System.Decimal,System.Nullable{System.Guid}}[],System.String,System.Threading.CancellationToken)">
+            <summary>
+            Builds, validates, and posts a journal entry from a set of posting lines
+            supplied by any module. This is the method a Sales Invoice, Purchase
+            Invoice, Payroll run, or Depreciation job ultimately calls.
+            </summary>
+        </member>
+        <member name="T:ERP.Domain.Accounting.Services.IPostingRule`1">
+            <summary>
+            Strategy contract implemented once per source-document type. Each module
+            (Sales, Purchasing, Payroll...) implements this to declare "given this document,
+            which accounts get debited/credited and by how much" without knowing anything
+            about period control, balance validation, or persistence — that's the
+            JournalPostingService's job. This is the Strategy pattern applied to the classic
+            ERP problem of "every document type has different posting rules."
+            </summary>
+        </member>
+        <member name="T:ERP.Domain.Common.Money">
+            <summary>
+            Represents a monetary amount tied to a specific currency. Never use decimal/float
+            directly for money in the domain — this VO prevents accidental cross-currency
+            arithmetic (e.g. adding SAR to USD without conversion) at compile/run time and
+            centralizes rounding rules (banker's rounding to the currency's minor unit).
+            </summary>
+        </member>
+    </members>
+</doc>

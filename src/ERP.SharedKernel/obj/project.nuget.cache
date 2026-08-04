@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "B3E3e8svvGU=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\Dell\\Downloads\\ERPSystem\\ERPSystem\\src\\ERP.SharedKernel\\ERP.SharedKernel.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Dell\\.nuget\\packages\\microsoft.netcore.app.ref\\9.0.17\\microsoft.netcore.app.ref.9.0.17.nupkg.sha512",
+    "C:\\Users\\Dell\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\9.0.17\\microsoft.windowsdesktop.app.ref.9.0.17.nupkg.sha512",
+    "C:\\Users\\Dell\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\9.0.17\\microsoft.aspnetcore.app.ref.9.0.17.nupkg.sha512"
+  ],
+  "logs": []
+}

@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ERP.Application</name>
+    </assembly>
+    <members>
+        <member name="T:ERP.Application.Accounting.Commands.CreateJournalEntry.JournalLineDto">
+            <summary>Single line requested by the caller (manual JE entry screen).</summary>
+        </member>
+        <member name="M:ERP.Application.Accounting.Commands.CreateJournalEntry.JournalLineDto.#ctor(System.Guid,System.Decimal,System.Decimal,System.Nullable{System.Guid},System.String)">
+            <summary>Single line requested by the caller (manual JE entry screen).</summary>
+        </member>
+        <member name="T:ERP.Application.Accounting.Commands.CreateJournalEntry.CreateJournalEntryCommand">
+            <summary>
+            CQRS Command: request to create AND immediately post a manual journal entry.
+            Manual entries (as opposed to system-generated ones from Sales/Purchasing/etc.)
+            go through this same command from the Journal Entry screen in the UI.
+            </summary>
+        </member>
+        <member name="M:ERP.Application.Accounting.Commands.CreateJournalEntry.CreateJournalEntryCommand.#ctor(System.Guid,System.Guid,System.DateTime,System.String,System.String,System.Collections.Generic.List{ERP.Application.Accounting.Commands.CreateJournalEntry.JournalLineDto})">
+            <summary>
+            CQRS Command: request to create AND immediately post a manual journal entry.
+            Manual entries (as opposed to system-generated ones from Sales/Purchasing/etc.)
+            go through this same command from the Journal Entry screen in the UI.
+            </summary>
+        </member>
+        <member name="T:ERP.Application.Accounting.Commands.CreateJournalEntry.CreateJournalEntryCommandHandler">
+            <summary>
+            Handler — thin orchestration only. All real business logic (balance
+            enforcement, period checks, account validation) lives in the Domain layer's
+            JournalPostingService and JournalEntry aggregate, per Clean Architecture: the
+            Application layer coordinates, the Domain layer decides.
+            </summary>
+        </member>
+        <member name="T:ERP.Application.Accounting.Queries.GetTrialBalance.ITrialBalanceReadContext">
+            <summary>
+            Read-model query context — separate, deliberately minimal, read-only DbContext
+            interface (CQRS read side) so reporting queries never share change-tracking
+            overhead with the write side. Implemented against the same physical database
+            via EF Core's read-only query projections in Persistence.
+            </summary>
+        </member>
+        <member name="T:ERP.Application.Accounting.Queries.GetTrialBalance.GetTrialBalanceQueryHandler">
+            <summary>
+            Handler computes the Trial Balance by summing all posted journal lines per
+            account up to AsOfDate. Result is cached in Redis (see
+            CachedTrialBalanceQueryHandler decorator in Infrastructure, applying the
+            Decorator pattern) keyed by CompanyId+AsOfDate, invalidated whenever a new
+            JournalEntryPostedEvent fires for that company.
+            </summary>
+        </member>
+    </members>
+</doc>

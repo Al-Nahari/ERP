@@ -1,0 +1,11 @@
+C:\Users\Dell\Downloads\ERPSystem\ERPSystem\src\ERP.Contracts\bin\Debug\net9.0\ERP.Contracts.deps.json
+C:\Users\Dell\Downloads\ERPSystem\ERPSystem\src\ERP.Contracts\bin\Debug\net9.0\ERP.Contracts.dll
+C:\Users\Dell\Downloads\ERPSystem\ERPSystem\src\ERP.Contracts\bin\Debug\net9.0\ERP.Contracts.pdb
+C:\Users\Dell\Downloads\ERPSystem\ERPSystem\src\ERP.Contracts\obj\Debug\net9.0\ERP.Contracts.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Dell\Downloads\ERPSystem\ERPSystem\src\ERP.Contracts\obj\Debug\net9.0\ERP.Contracts.AssemblyInfoInputs.cache
+C:\Users\Dell\Downloads\ERPSystem\ERPSystem\src\ERP.Contracts\obj\Debug\net9.0\ERP.Contracts.AssemblyInfo.cs
+C:\Users\Dell\Downloads\ERPSystem\ERPSystem\src\ERP.Contracts\obj\Debug\net9.0\ERP.Contracts.csproj.CoreCompileInputs.cache
+C:\Users\Dell\Downloads\ERPSystem\ERPSystem\src\ERP.Contracts\obj\Debug\net9.0\ERP.Contracts.dll
+C:\Users\Dell\Downloads\ERPSystem\ERPSystem\src\ERP.Contracts\obj\Debug\net9.0\refint\ERP.Contracts.dll
+C:\Users\Dell\Downloads\ERPSystem\ERPSystem\src\ERP.Contracts\obj\Debug\net9.0\ERP.Contracts.pdb
+C:\Users\Dell\Downloads\ERPSystem\ERPSystem\src\ERP.Contracts\obj\Debug\net9.0\ref\ERP.Contracts.dll

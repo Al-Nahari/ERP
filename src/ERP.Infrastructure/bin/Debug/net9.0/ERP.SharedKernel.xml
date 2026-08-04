@@ -1,0 +1,86 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ERP.SharedKernel</name>
+    </assembly>
+    <members>
+        <member name="T:ERP.SharedKernel.BaseEntity">
+            <summary>
+            Base class for every entity in the system. Provides identity, full audit trail
+            (Created/Updated by + timestamp), and soft-delete support so that no financial
+            or operational record is ever physically removed from the database — a hard
+            requirement for auditability in an ERP system.
+            </summary>
+        </member>
+        <member name="P:ERP.SharedKernel.BaseEntity.Id">
+            <summary>Surrogate primary key. GUID is used instead of identity int so that
+            entities can be created offline / in distributed scenarios (e.g. mobile POS,
+            multi-database sharding by company) without collision.</summary>
+        </member>
+        <member name="P:ERP.SharedKernel.BaseEntity.RowVersion">
+            <summary>Row version for optimistic concurrency — critical in an ERP where
+            multiple users may post to the same document (e.g. two clerks approving the
+            same Purchase Order) simultaneously.</summary>
+        </member>
+        <member name="P:ERP.SharedKernel.BaseEntity.DomainEvents">
+            <summary>Domain events raised by this entity, dispatched after successful
+            persistence (see MediatR DomainEventDispatcher in Infrastructure).</summary>
+        </member>
+        <member name="T:ERP.SharedKernel.IAuditable">
+            <summary>Marker + contract for auditable entities.</summary>
+        </member>
+        <member name="T:ERP.SharedKernel.ISoftDeletable">
+            <summary>Contract for soft-deletable entities. Global query filters in
+            ERP.Persistence automatically exclude IsDeleted == true rows.</summary>
+        </member>
+        <member name="T:ERP.SharedKernel.IDomainEvent">
+            <summary>Marker interface for domain events raised inside aggregates.</summary>
+        </member>
+        <member name="T:ERP.SharedKernel.ISpecification`1">
+            <summary>
+            Specification Pattern implementation. Encapsulates a reusable, composable,
+            testable query rule (e.g. "OverdueInvoicesSpecification",
+            "ActiveAccountsInGroupSpecification") independent of the repository/EF Core
+            implementation. Repositories accept an <see cref="T:ERP.SharedKernel.ISpecification`1"/> and
+            translate it into an IQueryable, keeping query logic out of controllers/handlers
+            and colocated with the domain concept it represents.
+            </summary>
+        </member>
+        <member name="T:ERP.SharedKernel.IRepository`1">
+            <summary>Generic repository contract implemented per-aggregate in Persistence.
+            Only Aggregate Roots get repositories — child entities are persisted via their
+            root, per DDD aggregate-boundary rules.</summary>
+        </member>
+        <member name="T:ERP.SharedKernel.IUnitOfWork">
+            <summary>Unit of Work — coordinates commits across multiple repositories within
+            a single business transaction (e.g. posting a Sales Invoice touches
+            SalesInvoice, InventoryTransaction, and JournalEntry repositories atomically).</summary>
+        </member>
+        <member name="T:ERP.SharedKernel.ValueObject">
+            <summary>
+            Base class for Value Objects per DDD: objects defined entirely by their
+            attributes, immutable, with structural equality. Used throughout the domain
+            for concepts like Money, AccountCode, TaxRate, Address — anything that has
+            no identity of its own and should never be mutated after construction.
+            </summary>
+        </member>
+        <member name="T:ERP.SharedKernel.AggregateRoot">
+            <summary>
+            Marker base for Aggregate Roots — the only entities that repositories operate on
+            directly. Child entities within the aggregate boundary (e.g. JournalLine inside
+            JournalEntry) are only ever reachable through the root, enforcing invariants
+            (e.g. "an entry must always be balanced") at the single point of entry.
+            </summary>
+        </member>
+        <member name="T:ERP.SharedKernel.Result">
+            <summary>
+            Standard operation-result wrapper avoiding exceptions for expected business-rule
+            failures (e.g. "cannot post an unbalanced journal entry"). Exceptions are
+            reserved for truly exceptional/programmer-error conditions.
+            </summary>
+        </member>
+        <member name="T:ERP.SharedKernel.Result`1">
+            <summary>Typed variant of <see cref="T:ERP.SharedKernel.Result"/> carrying a return value on success.</summary>
+        </member>
+    </members>
+</doc>

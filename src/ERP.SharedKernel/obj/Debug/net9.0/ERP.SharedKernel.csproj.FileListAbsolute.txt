@@ -1,0 +1,13 @@
+C:\Users\Dell\Downloads\ERPSystem\ERPSystem\src\ERP.SharedKernel\bin\Debug\net9.0\ERP.SharedKernel.deps.json
+C:\Users\Dell\Downloads\ERPSystem\ERPSystem\src\ERP.SharedKernel\bin\Debug\net9.0\ERP.SharedKernel.dll
+C:\Users\Dell\Downloads\ERPSystem\ERPSystem\src\ERP.SharedKernel\bin\Debug\net9.0\ERP.SharedKernel.pdb
+C:\Users\Dell\Downloads\ERPSystem\ERPSystem\src\ERP.SharedKernel\bin\Debug\net9.0\ERP.SharedKernel.xml
+C:\Users\Dell\Downloads\ERPSystem\ERPSystem\src\ERP.SharedKernel\obj\Debug\net9.0\ERP.SharedKernel.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Dell\Downloads\ERPSystem\ERPSystem\src\ERP.SharedKernel\obj\Debug\net9.0\ERP.SharedKernel.AssemblyInfoInputs.cache
+C:\Users\Dell\Downloads\ERPSystem\ERPSystem\src\ERP.SharedKernel\obj\Debug\net9.0\ERP.SharedKernel.AssemblyInfo.cs
+C:\Users\Dell\Downloads\ERPSystem\ERPSystem\src\ERP.SharedKernel\obj\Debug\net9.0\ERP.SharedKernel.csproj.CoreCompileInputs.cache
+C:\Users\Dell\Downloads\ERPSystem\ERPSystem\src\ERP.SharedKernel\obj\Debug\net9.0\ERP.SharedKernel.dll
+C:\Users\Dell\Downloads\ERPSystem\ERPSystem\src\ERP.SharedKernel\obj\Debug\net9.0\refint\ERP.SharedKernel.dll
+C:\Users\Dell\Downloads\ERPSystem\ERPSystem\src\ERP.SharedKernel\obj\Debug\net9.0\ERP.SharedKernel.xml
+C:\Users\Dell\Downloads\ERPSystem\ERPSystem\src\ERP.SharedKernel\obj\Debug\net9.0\ERP.SharedKernel.pdb
+C:\Users\Dell\Downloads\ERPSystem\ERPSystem\src\ERP.SharedKernel\obj\Debug\net9.0\ref\ERP.SharedKernel.dll
